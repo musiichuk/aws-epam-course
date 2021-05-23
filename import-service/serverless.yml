@@ -49,7 +49,17 @@ resources:
         Endpoint: maksym.musiichuk@gmail.com
         Protocol: email
         TopicArn:
-          Ref: createProductSnsTopic 
+          Ref: createProductSnsTopic
+    SNSSubscriptionWithFilterPolicy:
+      Type: AWS::SNS::Subscription
+      Properties:
+        Endpoint: aws.musiichuk.maksym@gmail.com
+        Protocol: email
+        FilterPolicy:
+          result:
+            - error
+        TopicArn:
+          Ref: createProductSnsTopic
 
 functions:
   importProductsFile:

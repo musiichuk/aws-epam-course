@@ -10,7 +10,7 @@ exports.catalogBatchProcesss = (event, context) => {
         TopicArn: process.env.SNS_ARN
     }, (error, data) => {
         success = true;
-        console.log('Send email with csv body: ', data[0].body);
+        console.log('Send email with csv body: ', data);
     })
 
     return success;
