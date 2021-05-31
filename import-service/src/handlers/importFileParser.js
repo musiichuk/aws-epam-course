@@ -22,6 +22,8 @@ const BUCKET = 'products-bucket-aws-epam';
 
 exports.importFileParser = (event, context) => {
     const s3 = new AWS.S3({ region: 'eu-west-1' });
+    const sqs = new AWS.SQS();
+
     const record = event.Records[0];
     console.log(record.s3.object.key);
     const params = {
@@ -34,7 +36,17 @@ exports.importFileParser = (event, context) => {
 
     s3Stream
         .pipe(csvParserStream)
-        .on('data', (data) => console.log('DATA: ', data))
+        .on('data', (data) => {
+            // console.log('QQQL ', JSON.stringify(data));
+
+            sqs.sendMessage({
+                QueueUrl: process.env.SQS_URL,
+                MessageBody: `${data}`
+            }, (error, data) => {
+                console.log('Send message error: ', error);
+                console.log('Send message: ', data);
+            })
+        })
         .on('error', (error) => console.log('ERROR importFileParser: ', error))
         .on('end', () => console.log('END'))
 

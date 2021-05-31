@@ -6,6 +6,13 @@ provider:
   lambdaHashingVersion: 20201221
   stage: dev
   region: eu-west-1
+
+  environment:
+    SQS_URL:
+      Ref: catalogItemsQueues
+    SNS_ARN:
+      Ref: createProductSnsTopic
+
   iamRoleStatements:
     - Effect: "Allow"
       Action: "s3:ListBucket"
@@ -16,9 +23,33 @@ provider:
         - "s3:*"
       Resource:
         - "arn:aws:s3:::products-bucket-aws-epam/*"
-        
-plugins:
-  - serverless-offline
+    - Effect: "Allow"
+      Action: 
+        - "sqs:*"
+      Resource:
+        - Fn::GetAtt: [catalogItemsQueues, Arn]
+    - Effect: "Allow"
+      Action: "sns:*"
+      Resource:
+        Ref: createProductSnsTopic
+
+resources:
+  Resources:
+    catalogItemsQueues:
+      Type: "AWS::SQS::Queue"
+      Properties:
+        QueueName: catalog-items-queue
+    createProductSnsTopic:
+      Type: "AWS::SNS::Topic"
+      Properties:
+        TopicName: create-product-topic  
+    SNSSubscription:
+      Type: "AWS::SNS::Subscription"
+      Properties:
+        Endpoint: maksym.musiichuk@gmail.com
+        Protocol: email
+        TopicArn:
+          Ref: createProductSnsTopic
 
 functions:
   importProductsFile:
@@ -40,4 +71,12 @@ functions:
           rules:
             - prefix: uploaded/
           existing: true
-        
+  catalogBatchProcesss:
+    handler: handler.catalogBatchProcesss
+    events:
+      - sqs: 
+          arn:
+            Fn::GetAtt:
+              - catalogItemsQueues
+              - Arn
+          batchSize: 5
