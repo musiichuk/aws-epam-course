@@ -50,16 +50,6 @@ resources:
         Protocol: email
         TopicArn:
           Ref: createProductSnsTopic
-    SNSSubscriptionWithFilterPolicy:
-      Type: AWS::SNS::Subscription
-      Properties:
-        Endpoint: aws.musiichuk.maksym@gmail.com
-        Protocol: email
-        FilterPolicy:
-          result:
-            - error
-        TopicArn:
-          Ref: createProductSnsTopic
 
 functions:
   importProductsFile:
@@ -90,6 +80,3 @@ functions:
               - catalogItemsQueues
               - Arn
           batchSize: 5
-
-
-        
