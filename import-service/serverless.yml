@@ -1,5 +1,8 @@
 service: import-service
 
+plugins:
+  - serverless-offline
+
 provider:
   name: aws
   runtime: nodejs12.x
@@ -58,10 +61,17 @@ functions:
       - http:
           path: import
           method: get 
+          cors: true
           request:
             parameters:
               querystrings:
                 name: true
+          authorizer:
+            name: basicAuthorizer
+            arn:  "arn:aws:lambda:eu-west-1:559876683470:function:authorization-service-dev-authorizer"
+            resultTtlInSeconds: 0
+            identitySource: method.request.header.Authorization
+            type: token
   importFileParser:
     handler: handler.importFileParser
     events:
